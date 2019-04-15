@@ -37,33 +37,27 @@ let path = {
 }
 
 // BrowserSync
-function bsReload(cb) {
+function bsReload() {
 	browserSync.init({
 		server: {
 		  baseDir: './'
 		}
 	});
-
-	cb();
 }
 
 // BrowserSync Reload
-function browserSyncReload(cb) {
+function browserSyncReload() {
 	browserSync.reload();
-
-	cb();
 }
 
 // Clean
-function clean(cb) {
+function clean() {
 	return gulp.src(path.src.clear)
 	.pipe(clear());
-
-	cb();
 }
 
 //Pug to HTML
-function html(cb) {
+function html() {
 	return gulp.src(path.src.pug)
 	.pipe(plumber())
 	.pipe(pug({
@@ -71,29 +65,24 @@ function html(cb) {
     }))
 	.pipe(gulp.dest(path.dest.html))
 	.pipe(browserSync.stream());
-
-	cb();
 }
 
 // CSS
-function css(cb) {
+function css() {
 	return gulp.src(path.src.common)
 	.pipe(sourcemaps.init())
 	.pipe(plumber())
     .pipe(stylus())
-	.pipe(concat('main.css'))
 	.pipe(autoprefixer({browsers: ['last 2 versions', 'ie 11', 'Android >= 4.1', 'Safari >= 8', 'iOS >= 8']}))
 	.pipe(csso())
 	.pipe(rename('main.min.css'))
 	.pipe(sourcemaps.write())
 	.pipe(gulp.dest(path.dest.styles))
 	.pipe(browserSync.stream());
-
-	cb();
 }
 
 // JS
-function js(cb) {
+function js() {
 	return gulp.src(path.src.js)
 	.pipe(sourcemaps.init())
 	.pipe(plumber())
@@ -106,8 +95,6 @@ function js(cb) {
 	.pipe(sourcemaps.write())
 	.pipe(gulp.dest(path.dest.js))
 	.pipe(browserSync.stream());
-
-	cb();
 }
 
 // Watch files
