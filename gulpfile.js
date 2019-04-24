@@ -2,6 +2,7 @@
 
 const gulp = require('gulp');
 const browserSync = require('browser-sync');
+const rupture = require('rupture');
 const uglify = require('gulp-uglify');
 const rename = require('gulp-rename');
 const concat = require('gulp-concat');
@@ -46,14 +47,9 @@ function bsReload() {
 }
 
 // BrowserSync Reload
-function browserSyncReload() {
+function browserSyncReload(cb) {
 	browserSync.reload();
-}
-
-// Clean
-function clean() {
-	return gulp.src(path.src.clear)
-	.pipe(clear());
+	cb();
 }
 
 //Pug to HTML
@@ -69,21 +65,21 @@ function html() {
 
 // CSS
 function css() {
-	return gulp.src(path.src.common)
-	.pipe(sourcemaps.init())
-	.pipe(plumber())
-    .pipe(stylus())
-	.pipe(autoprefixer({browsers: ['last 2 versions', 'ie 11', 'Android >= 4.1', 'Safari >= 8', 'iOS >= 8']}))
-	.pipe(csso())
-	.pipe(rename('main.min.css'))
-	.pipe(sourcemaps.write())
-	.pipe(gulp.dest(path.dest.styles))
-	.pipe(browserSync.stream());
+    return gulp.src(path.src.common)
+    .pipe(sourcemaps.init())
+    .pipe(plumber())
+    .pipe(stylus({use:[rupture()]}))
+    .pipe(autoprefixer({browsers: ['last 2 versions', 'ie 11', 'Android >= 4.1', 'Safari >= 8', 'iOS >= 8']}))
+    .pipe(csso())
+    .pipe(rename('main.min.css'))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest(path.dest.styles))
+    .pipe(browserSync.stream());
 }
 
 // JS
 function js() {
-	return gulp.src(path.src.js)
+    return gulp.src(path.src.js)
 	.pipe(sourcemaps.init())
 	.pipe(plumber())
 	.pipe(babel({
@@ -99,10 +95,16 @@ function js() {
 
 // Watch files
 function watchFiles() {
-	gulp.watch(path.src.styles, gulp.series(clean, build));
-    gulp.watch(path.src.js, gulp.series(clean, build));
-	gulp.watch(path.src.pug, gulp.series(html));
-	gulp.watch('./**/*', browserSyncReload );
+	gulp.watch(path.src.styles, css);
+    gulp.watch(path.src.js, js);
+	gulp.watch(path.src.pug, html);
+	gulp.watch(path.src.html, browserSyncReload);
+}
+
+// Clean
+function clean() {
+    return gulp.src(path.src.clear)
+      .pipe(clear());
 }
 
 let build = gulp.parallel(js, css);
@@ -110,6 +112,7 @@ let build = gulp.parallel(js, css);
 exports.html = html;
 exports.build = build;
 exports.watch = watchFiles;
-exports.clean = clean;
 exports.css = css;
-exports.default = gulp.series(html, clean, css, js, gulp.parallel(bsReload, watchFiles));
+exports.js = js;
+exports.clean = clean;
+exports.default = gulp.series(clean, build, gulp.parallel(bsReload, watchFiles));
